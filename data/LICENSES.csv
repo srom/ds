@@ -1,4 +1,6 @@
-﻿data,license,link
+data,license,link
 population,Public Domain,https://github.com/datasets/population
 unemployment,"Copyright, European Union",http://ec.europa.eu/eurostat/tgm/table.do?tab=table&init=1&language=en&pcode=tipsun20
 gdp,"Copyright, European Union",http://ec.europa.eu/eurostat/data
+"World Bank Global Financial Development","Copyright, World Bank",https://datacatalog.worldbank.org/dataset/global-financial-development
+"World Economic Outlook database","Copyright, IMF",http://www.imf.org/external/pubs/ft/weo/2018/01/weodata/download.aspx
