@@ -3,21 +3,35 @@ import tensorflow as tf
 
 class LSTMNetwork(object):
 
-    def __init__(self, n_inputs, n_outputs, n_steps, n_neurons, learning_rate, adam_epsilon=1e8):
-        with tf.name_scope('input'):
-            self.X = tf.placeholder(tf.float32, [None, n_steps, n_inputs])
-            self.Y = tf.placeholder(tf.float32, [None, n_steps, n_outputs])
+    def __init__(
+            self,
+            n_inputs,
+            n_outputs,
+            n_steps,
+            n_neurons,
+            learning_rate,
+            adam_epsilon=1e8,
+            name='lstm',
+    ):
+        with tf.variable_scope(f'{name}/input'):
+            self.X = tf.placeholder(tf.float32, [None, n_steps, n_inputs], name='X')
+            self.Y = tf.placeholder(tf.float32, [None, n_steps, n_outputs], name='Y')
 
-        with tf.name_scope('rnn'):
+        with tf.variable_scope(f'{name}/rnn'):
             cell = tf.contrib.rnn.OutputProjectionWrapper(
                 tf.contrib.rnn.BasicLSTMCell(num_units=n_neurons),
                 output_size=n_outputs
             )
-            rnn_outputs, states = tf.nn.dynamic_rnn(cell, self.X, dtype=tf.float32)
+            self.rnn_outputs, states = tf.nn.dynamic_rnn(cell, self.X, dtype=tf.float32, scope='dynamic_rnn')
 
-        with tf.name_scope('loss'):
-            self.loss = tf.reduce_mean(tf.square(rnn_outputs - self.Y))
+        with tf.variable_scope(f'{name}/loss'):
+            self.loss = tf.reduce_mean(tf.square(self.rnn_outputs - self.Y), name='mse')
 
-        with tf.name_scope('train'):
+        with tf.variable_scope(f'{name}/train'):
             optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate, epsilon=adam_epsilon)
             self.training_op = optimizer.minimize(self.loss)
+
+        with tf.variable_scope('summary'):
+            tf.summary.scalar('mse', tf.reduce_mean(self.loss))
+
+        self.summary = tf.summary.merge_all()
