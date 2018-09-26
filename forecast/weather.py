@@ -28,7 +28,7 @@ def train_weather_forecast_model(
     export_local=False,
 ):
     logger.info(f'Loading weather data from {weather_data_path}')
-    X_train, X_test = get_train_test_data(weather_data_path)
+    X_train, X_test, _ = get_train_test_data(weather_data_path)
 
     save_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), model_dir, 'weather')
 
