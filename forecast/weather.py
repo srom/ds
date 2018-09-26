@@ -23,9 +23,9 @@ logger = logging.getLogger(__name__)
 
 
 def train_weather_forecast_model(
-        weather_data_path=WEATHER_DATA_PATH,
-        model_dir='checkpoints',
-        export_local=False,
+    weather_data_path=WEATHER_DATA_PATH,
+    model_dir='checkpoints',
+    export_local=False,
 ):
     logger.info(f'Loading weather data from {weather_data_path}')
     X, scaler = get_weather_data(weather_data_path)
