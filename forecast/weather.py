@@ -28,8 +28,7 @@ def train_weather_forecast_model(
     export_local=False,
 ):
     logger.info(f'Loading weather data from {weather_data_path}')
-    X, scaler = get_weather_data(weather_data_path)
-    X_train, X_test = get_training_test_sets(X)
+    X_train, X_test = get_train_test_data(weather_data_path)
 
     save_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), model_dir, 'weather')
 
@@ -68,6 +67,30 @@ def train_weather_forecast_model(
                 export_model(saver, model_save_path, 'weather', [model.rnn_outputs.name[:-2]], local=True)
 
 
+def forecast_weather(X):
+    x = X[0:TIME_STEPS,:]
+    predictions = None
+    with load_lstm_model() as lstm:
+        for i, _ in enumerate(iterate_over_window(X)):
+            if i % 1000 == 0:
+                print(f'Iteration {i}')
+            x_forecast = lstm.evaluate([x])[0]
+            x = x_forecast
+
+            if predictions is None:
+                predictions = np.concatenate(([X[0,:]], x_forecast), axis=0)
+            else:
+                predictions = np.append(predictions, [x_forecast[-1]], axis=0)
+
+    return predictions
+
+
+def get_train_test_data(weather_data_path=WEATHER_DATA_PATH):
+    X, scaler = get_weather_data(weather_data_path)
+    X_train, X_test = get_training_test_sets(X)
+    return X_train, X_test, scaler
+
+
 def get_weather_data(weather_data_path):
     dt_column = 'Date/Time'
     weather_df = pd.read_csv(weather_data_path, parse_dates=[dt_column])
@@ -98,3 +121,57 @@ def next_batch(X, batch_size):
         y__.append(get_y(matrix))
 
     return np.array(X__), np.array(y__)
+
+
+def load_lstm_model():
+    """
+    Use as a context manager or explicitly close after use.
+    """
+    return load_model(
+        path='forecast/model/weather.pb',
+        input_name='weather/lstm/input/X:0',
+        evaluator_name='weather/lstm/rnn/dynamic_rnn/transpose_1:0',
+    )
+
+
+class LSTMForecast(object):
+
+    def __init__(self, session, x, f_x):
+        self.session = session
+        self.x = x
+        self.f_x = f_x
+
+    def evaluate(self, x):
+        return self.session.run(self.f_x, feed_dict={self.x: x})
+
+    def close(self):
+        self.session.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.close()
+
+
+def load_model(path, input_name, evaluator_name):
+    """
+    Use as a context manager or explicitly close after use.
+    """
+    with tf.gfile.GFile(path, "rb") as f:
+        graph_def = tf.GraphDef()
+        graph_def.ParseFromString(f.read())
+
+    with tf.Graph().as_default() as graph:
+        tf.import_graph_def(graph_def, name='weather')
+        session = tf.Session(graph=graph)
+
+        x = graph.get_tensor_by_name(input_name)
+        f_x = graph.get_tensor_by_name(evaluator_name)
+
+        return LSTMForecast(session, x, f_x)
+
+
+def iterate_over_window(X):
+    for i in range(len(X)):
+        yield X[i:TIME_STEPS + i,:]
