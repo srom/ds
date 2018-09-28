@@ -28,7 +28,8 @@ def train_weather_forecast_model(
     export_local=False,
 ):
     logger.info(f'Loading weather data from {weather_data_path}')
-    X_train, X_test, _ = get_train_test_data(weather_data_path)
+    X, _ = get_weather_data(weather_data_path)
+    X_train, X_test = get_train_test_sets(X)
 
     save_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), model_dir, 'weather')
 
@@ -85,12 +86,6 @@ def forecast_weather(X):
     return predictions
 
 
-def get_train_test_data(weather_data_path=WEATHER_DATA_PATH):
-    X, scaler = get_weather_data(weather_data_path)
-    X_train, X_test = get_training_test_sets(X)
-    return X_train, X_test, scaler
-
-
 def get_weather_data(weather_data_path):
     dt_column = 'Date/Time'
     weather_df = pd.read_csv(weather_data_path, parse_dates=[dt_column])
@@ -102,7 +97,7 @@ def get_weather_data(weather_data_path):
     return scaler.transform(X), scaler
 
 
-def get_training_test_sets(X, ratio=0.3):
+def get_train_test_sets(X, ratio=0.3):
     last_slice = int(len(X) * ratio)
     return X[:-last_slice,:], X[-last_slice:,:]
 
