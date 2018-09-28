@@ -102,7 +102,7 @@ def get_train_test_sets(X, ratio=0.3):
     return X[:-last_slice,:], X[-last_slice:,:]
 
 
-def next_batch(X, batch_size):
+def next_batch(X, batch_size, time_steps=TIME_STEPS):
     def get_X(m):
         return m[:-1, :]
 
@@ -110,8 +110,8 @@ def next_batch(X, batch_size):
         return m[1:, :]
 
     X__, y__ = [], []
-    for x in np.random.randint(len(X) - (TIME_STEPS + 1), size=batch_size):
-        matrix = X[x:x+TIME_STEPS+1]
+    for x in np.random.randint(0, len(X) - (time_steps + 1), size=batch_size):
+        matrix = X[x:x+time_steps+1]
         X__.append(get_X(matrix))
         y__.append(get_y(matrix))
 
@@ -167,6 +167,6 @@ def load_model(path, input_name, evaluator_name):
         return LSTMForecast(session, x, f_x)
 
 
-def iterate_over_window(X):
+def iterate_over_window(X, time_steps=TIME_STEPS):
     for i in range(len(X)):
-        yield X[i:TIME_STEPS + i,:]
+        yield X[i:time_steps + i,:]
