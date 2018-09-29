@@ -68,17 +68,18 @@ def train_weather_forecast_model(
 
 
 def forecast_weather(X):
-    x = X[0:TIME_STEPS,:]
     predictions = None
     with load_lstm_model() as lstm:
-        for i, _ in enumerate(iterate_over_window(X)):
+        for i, x in enumerate(iterate_over_window(X)):
+            if len(x) != TIME_STEPS:
+                break
+
             if i % 1000 == 0:
                 print(f'Iteration {i}')
             x_forecast = lstm.evaluate([x])[0]
-            x = x_forecast
 
             if predictions is None:
-                predictions = np.concatenate(([X[0,:]], x_forecast), axis=0)
+                predictions = np.array([x_forecast[-1]])
             else:
                 predictions = np.append(predictions, [x_forecast[-1]], axis=0)
 
