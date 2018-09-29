@@ -25,13 +25,15 @@ class LSTMNetwork(object):
             self.rnn_outputs, states = tf.nn.dynamic_rnn(cell, self.X, dtype=tf.float32, scope='dynamic_rnn')
 
         with tf.variable_scope(f'{name}/loss'):
-            self.loss = tf.sqrt(tf.reduce_mean(tf.square(tf.substract(self.rnn_outputs, self.Y)), name='rmse'))
+            self.diff = tf.subtract(self.rnn_outputs, self.Y, name='diff')
+            self.loss = tf.reduce_mean(tf.square(self.diff), name='mse')
 
         with tf.variable_scope(f'{name}/train'):
             optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate, epsilon=adam_epsilon)
             self.training_op = optimizer.minimize(self.loss)
 
         with tf.variable_scope('summary'):
-            tf.summary.scalar('rmse', tf.reduce_mean(self.loss))
+            tf.summary.scalar('mse', tf.reduce_mean(self.loss))
+            tf.summary.scalar('diff', tf.reduce_mean(self.diff))
 
         self.summary = tf.summary.merge_all()

@@ -33,7 +33,7 @@ def train_weather_forecast_model(
 
     save_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), model_dir, 'weather')
 
-    model = LSTMNetwork(NUM_INPUTS, NUM_OUTPUTS, TIME_STEPS, NUM_NEURONS, LEARNING_RATE)
+    model = LSTMNetwork(NUM_INPUTS, NUM_OUTPUTS, TIME_STEPS, NUM_NEURONS, LEARNING_RATE, adam_epsilon=1.0)
 
     saver = tf.train.Saver()
     best_mse = float('Inf')
