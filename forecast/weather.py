@@ -67,15 +67,16 @@ def train_weather_forecast_model(
                 export_model(saver, model_save_path, 'weather', [model.rnn_outputs.name[:-2]], local=True)
 
 
-def forecast_weather(X):
+def forecast_weather(X, verbose=False):
     predictions = None
     with load_lstm_model() as lstm:
         for i, x in enumerate(iterate_over_window(X)):
             if len(x) != TIME_STEPS:
                 break
 
-            if i % 1000 == 0:
+            if verbose and i % 1000 == 0:
                 print(f'Iteration {i}')
+
             x_forecast = lstm.evaluate([x])[0]
 
             if predictions is None:
@@ -86,9 +87,8 @@ def forecast_weather(X):
     return predictions
 
 
-def forecast_weather_one_window(x):
-    with load_lstm_model() as lstm:
-        return lstm.evaluate([x])[0]
+def forecast_one_time_step(lstm_model, x):
+    return lstm_model.evaluate([x])[0]
 
 
 def get_weather_data(weather_data_path):
