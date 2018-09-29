@@ -16,8 +16,8 @@ TIME_STEPS = 24
 NUM_INPUTS = 4
 NUM_OUTPUTS = 4
 NUM_NEURONS = 128
-LEARNING_RATE = 1e-2
-BATCH_SIZE = 100
+LEARNING_RATE = 1e-3
+BATCH_SIZE = 50
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +42,6 @@ def train_weather_forecast_model(
 
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
-        sess.run(tf.local_variables_initializer())
 
         summary_writer = tf.summary.FileWriter('forecast/summary_log/train', sess.graph)
 
@@ -84,6 +83,11 @@ def forecast_weather(X):
                 predictions = np.append(predictions, [x_forecast[-1]], axis=0)
 
     return predictions
+
+
+def forecast_weather_one_window(x):
+    with load_lstm_model() as lstm:
+        return lstm.evaluate([x])[0]
 
 
 def get_weather_data(weather_data_path):
