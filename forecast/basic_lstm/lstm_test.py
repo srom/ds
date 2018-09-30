@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 
-from .network import LSTMNetwork
+from . import LSTMNetwork
 
 
 class LSTMTest(tf.test.TestCase):

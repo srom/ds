@@ -7,7 +7,7 @@ from sklearn.preprocessing import StandardScaler
 import tensorflow as tf
 
 from .export import export_model
-from .basic_lstm.network import LSTMNetwork
+from .basic_lstm import LSTMNetwork
 
 
 WEATHER_DATA_PATH = '~/workspace/ds/data/AMPds/Climate_HourlyWeather.csv'
