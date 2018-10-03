@@ -22,7 +22,7 @@ class LSTMNetwork(object):
                 tf.contrib.rnn.BasicLSTMCell(num_units=n_neurons),
                 output_size=n_outputs
             )
-            self.rnn_outputs, states = tf.nn.dynamic_rnn(cell, self.X, dtype=tf.float32, scope='dynamic_rnn')
+            self.rnn_outputs, _ = tf.nn.dynamic_rnn(cell, self.X, dtype=tf.float32, scope='dynamic_rnn')
 
         with tf.variable_scope(f'{name}/loss'):
             self.diff = tf.subtract(self.rnn_outputs, self.Y, name='diff')
