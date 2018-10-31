@@ -31,7 +31,7 @@ class BayesianLinearRegression(object):
 
         self.y_hat = tf.add(tf.multiply(self.slope, self.x), self.intercept)
 
-        self.log_likelihood = -tf.log(self.sigma) - tf.divide(
+        self.log_likelihood = - tf.log(self.sigma) - tf.divide(
             tf.square(self.y - self.y_hat), 2 * tf.square(self.sigma))
 
         # prior is implictly set to uniform with amplitude 1.0
