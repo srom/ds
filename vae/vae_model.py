@@ -10,13 +10,13 @@ class VariationalAutoEncoder(object):
             self.learning_rate = tf.placeholder(tf.float32, ())
             self.num_samples = tf.placeholder(tf.int32, ())
 
-        with tf.variable_scope('{name}/probabilities'.format(name=name)):
+        with tf.variable_scope('{name}/probabilities'.format(name=name), reuse=tf.AUTO_REUSE):
             self.prior = make_prior(encoding_size)
             self.posterior = make_encoder(self.x, encoding_size, hidden_layer_size)
             self.encoding = self.posterior.sample()
             self.likelihood = make_decoder(self.encoding, x_size, hidden_layer_size)
             self.samples = make_decoder(
-                self.prior.sample(self.num_samples), x_size, hidden_layer_size).mean()
+                self.prior.sample(self.num_samples), x_size, hidden_layer_size).sample()
 
         with tf.variable_scope('{name}/loss'.format(name=name)):
             self.elbo_loss = make_elbo_loss(self.x, self.prior, self.posterior, self.likelihood)
