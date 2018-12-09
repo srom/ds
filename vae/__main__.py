@@ -30,7 +30,16 @@ def main():
 
     vae_tril = VariationalAutoEncoder(178, 10, multivariate_tril_decoder=True, name='vae_tril')
 
-    save_path = train_vae(vae_tril, X_train, X_test, 0.001, 20000, 100, name='vae_tril')
+    save_path = train_vae(
+        vae_tril,
+        X_train,
+        X_test,
+        learning_rate=0.001,
+        n_epochs=20000,
+        batch_size=100,
+        log_every=100,
+        name='vae_tril',
+    )
 
     logger.info(f'Results saved to {save_path}')
     logger.info('Done')

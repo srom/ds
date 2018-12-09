@@ -20,7 +20,7 @@ class VariationalAutoEncoder(object):
         name='vae',
     ):
         with tf.variable_scope('{name}/input'.format(name=name)):
-            self.x = tf.placeholder(tf.float32, [None, x_size])
+            self.x = tf.placeholder(tf.float64, [None, x_size])
             self.learning_rate = tf.placeholder(tf.float32, ())
             self.num_samples = tf.placeholder(tf.int32, ())
 
@@ -54,8 +54,8 @@ class VariationalAutoEncoder(object):
 
 def make_prior(encoding_size):
     return tfp.distributions.MultivariateNormalDiag(
-        loc=tf.zeros(encoding_size),
-        scale_diag=tf.ones(encoding_size),
+        loc=tf.zeros(encoding_size, dtype=tf.float64),
+        scale_diag=tf.ones(encoding_size, dtype=tf.float64),
         name='prior',
     )
 
@@ -112,7 +112,7 @@ def train_vae(
     n_epochs,
     batch_size,
     name='vae',
-    print_every=1000,
+    log_every=1000,
     summary_log_path='./summary_log',
 ):
     saver = tf.train.Saver()
@@ -136,18 +136,18 @@ def train_vae(
                 },
             )
 
-            elbo_test, summary = sess.run(
-                [vae_cls.elbo_loss, vae_cls.summary],
-                feed_dict={vae_cls.x: x_test},
-            )
+            if i % log_every == 0:
+                elbo_test, summary = sess.run(
+                    [vae_cls.elbo_loss, vae_cls.summary],
+                    feed_dict={vae_cls.x: x_test},
+                )
 
-            summary_writer.add_summary(summary, global_step=i)
+                summary_writer.add_summary(summary, global_step=i)
 
-            if not math.isnan(elbo_test) and elbo_test > best_elbo:
-                save_path = saver.save(sess, f'./{name}.ckpt')
-                best_elbo = elbo_test
+                if not math.isnan(elbo_test) and elbo_test > best_elbo:
+                    save_path = saver.save(sess, f'./{name}.ckpt')
+                    best_elbo = elbo_test
 
-            if i % print_every == 0:
                 logger.info(f'{i} / {n_epochs}: latest = {elbo_test} | best = {best_elbo}')
 
         return save_path
