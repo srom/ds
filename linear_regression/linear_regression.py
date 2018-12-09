@@ -85,7 +85,7 @@ class BayesianLinearRegression(object):
 
             u = np.random.uniform(0.0, 1.0)
 
-            p_accept =  log_post_proposal - log_post_current
+            p_accept = log_post_proposal - log_post_current
 
             if p_accept > np.log(u):
                 current_parameters = proposal_parameters
