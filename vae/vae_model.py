@@ -96,6 +96,19 @@ def make_elbo_loss(x, prior, posterior, likelihood):
     return tf.reduce_mean(log_likelihood - divergence, name='elbo_loss')
 
 
+####
+# Training functions
+###
+
+
+class RunSummary(object):
+
+    def __init__(self, iteration, save_path, best_elbo):
+        self.iteration = iteration
+        self.save_path = save_path
+        self.best_elbo = best_elbo
+
+
 def random_draw(x, y=None, batch_size=100):
     indices = np.random.randint(0, len(x), batch_size)
     if y is not None:
@@ -111,6 +124,7 @@ def train_vae(
     learning_rate,
     n_epochs,
     batch_size,
+    prev_run_summary=None,
     name='vae',
     log_every=1000,
     summary_log_path='./summary_log',
@@ -118,14 +132,20 @@ def train_vae(
     saver = tf.train.Saver()
 
     with tf.Session() as sess:
-        tf.global_variables_initializer().run()
-        tf.local_variables_initializer().run()
+        if prev_run_summary is not None:
+            saver.restore(sess, prev_run_summary.save_path)
+        else:
+            tf.global_variables_initializer().run()
+            tf.local_variables_initializer().run()
 
         summary_writer = tf.summary.FileWriter(summary_log_path, sess.graph)
 
-        save_path = None
-        best_elbo = float('-inf')
+        save_path = prev_run_summary.save_path if prev_run_summary else None
+        best_elbo = prev_run_summary.best_elbo if prev_run_summary else float('-inf')
+        iteration = prev_run_summary.iteration if prev_run_summary else 0
+
         for i, epoch in enumerate(range(n_epochs)):
+            iteration += i
             x_batch = random_draw(x, batch_size=batch_size)
 
             sess.run(
@@ -142,7 +162,7 @@ def train_vae(
                     feed_dict={vae_cls.x: x_test},
                 )
 
-                summary_writer.add_summary(summary, global_step=i)
+                summary_writer.add_summary(summary, global_step=iteration)
 
                 if not math.isnan(elbo_test) and elbo_test > best_elbo:
                     save_path = saver.save(sess, f'./{name}.ckpt')
@@ -150,4 +170,4 @@ def train_vae(
 
                 logger.info(f'{i} / {n_epochs}: latest = {elbo_test} | best = {best_elbo}')
 
-        return save_path
+        return RunSummary(iteration, save_path, best_elbo)

@@ -4,7 +4,7 @@ import pandas as pd
 import sklearn.model_selection
 import sklearn.preprocessing
 
-from .vae_model import VariationalAutoEncoder, train_vae
+from .vae_model import VariationalAutoEncoder, train_vae, RunSummary
 
 
 logger = logging.getLogger(__name__)
@@ -30,18 +30,24 @@ def main():
 
     vae_tril = VariationalAutoEncoder(178, 10, multivariate_tril_decoder=True, name='vae_tril')
 
-    save_path = train_vae(
+    # Previous run
+    run_summary = RunSummary(2600, './vae_tril.ckpt', -4068830.88)
+    # run_summary = None
+
+    # New run
+    run_summary = train_vae(
         vae_tril,
         X_train,
         X_test,
-        learning_rate=0.001,
-        n_epochs=20000,
+        learning_rate=0.0001,
+        n_epochs=40000,
         batch_size=100,
         log_every=100,
         name='vae_tril',
+        prev_run_summary=run_summary,
     )
 
-    logger.info(f'Results saved to {save_path}')
+    logger.info(f'Results saved to {run_summary.save_path}')
     logger.info('Done')
 
 
