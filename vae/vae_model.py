@@ -171,3 +171,16 @@ def train_vae(
                 logger.info(f'{i} / {n_epochs}: latest = {elbo_test} | best = {best_elbo}')
 
         return RunSummary(iteration, save_path, best_elbo)
+
+
+def encoding(vae, x, save_path):
+    saver = tf.train.Saver()
+    with tf.Session() as sess:
+        saver.restore(sess, save_path)
+        return sess.run(vae.encoding, {vae.x: x})
+
+
+def generate(vae, num_samples, save_path):
+    saver = tf.train.Saver()
+    with tf.Session() as sess:
+        saver.restore(sess, save_path)
